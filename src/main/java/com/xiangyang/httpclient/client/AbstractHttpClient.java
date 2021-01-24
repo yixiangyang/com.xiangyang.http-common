@@ -9,15 +9,23 @@ import com.xiangyang.httpclient.exception.HttpClientException;
 import com.xiangyang.httpclient.utils.URL;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+//import org.apache.http.HttpEntity;
+//import org.apache.http.client.ResponseHandler;
+//import org.apache.http.client.methods.HttpUriRequest;
+//import org.apache.http.entity.StringEntity;
+//import org.apache.http.impl.client.BasicResponseHandler;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.hc.core5.http.ContentType.APPLICATION_FORM_URLENCODED;
 
 abstract class AbstractHttpClient<T> {
     protected static final String HEADER_CONTENT_TYPE_APPLICATION_JONS = "application/json";
@@ -36,7 +44,7 @@ abstract class AbstractHttpClient<T> {
 
     private TypeReference<T> typeReference;
 
-    private ResponseHandler<T> responseHandler;
+    private HttpClientResponseHandler<T> responseHandler;
 
     private HttpClientFactory.Config config;
 
@@ -65,7 +73,7 @@ abstract class AbstractHttpClient<T> {
         this.typeReference = typeReference;
     }
 
-    public void setResponseHandler(ResponseHandler<T> responseHandler) {
+    public void setResponseHandler(HttpClientResponseHandler<T> responseHandler) {
         this.responseHandler = responseHandler;
     }
 
@@ -101,7 +109,7 @@ abstract class AbstractHttpClient<T> {
         return this.typeReference;
     }
 
-    public ResponseHandler<T> getResponseHandler() {
+    public HttpClientResponseHandler<T> getResponseHandler() {
         return this.responseHandler;
     }
 
@@ -182,8 +190,8 @@ abstract class AbstractHttpClient<T> {
         return this;
     }
 
-    protected ResponseHandler<T> resolveResponseHander() {
-        ResponseHandler<T> responseHander = this.responseHandler;
+    protected HttpClientResponseHandler<T> resolveResponseHander() {
+        HttpClientResponseHandler<T> responseHander = this.responseHandler;
         if (responseHander == null) {
             Class<T> responseClass = this.responseClass;
             if (responseClass == null && this.typeReference == null)
@@ -191,8 +199,8 @@ abstract class AbstractHttpClient<T> {
             if (this.typeReference != null) {
                 responseHander = XiangYangHttpClient.getJsonResponseHandler(this.typeReference);
             } else if (String.class.equals(responseClass)) {
-                BasicResponseHandler basicResponseHandler = new BasicResponseHandler();
-                responseHander = (ResponseHandler<T>) basicResponseHandler;
+                BasicHttpClientResponseHandler basicResponseHandler = new BasicHttpClientResponseHandler();
+                responseHander = (HttpClientResponseHandler<T>) basicResponseHandler;
             } else {
                 responseHander = XiangYangHttpClient.getJsonResponseHandler(responseClass);
             }
@@ -201,8 +209,10 @@ abstract class AbstractHttpClient<T> {
     }
 
     public static StringEntity getStringEntry(Object obj) {
-        StringEntity entity = new StringEntity(JSON.toJSONString(obj), Charset.forName("UTF-8"));
-        entity.setContentEncoding("UTF-8");
+        ContentType contentType = ContentType.create("application/x-www-form-urlencoded","UTF-8");
+        StringEntity ee = new StringEntity(JSON.toJSONString(obj),contentType,"UTF-8",false);
+//        StringEntity entity = new StringEntity(JSON.toJSONString(obj), Charset.forName("UTF-8"));
+//        entity.setContentEncoding("UTF-8");
         return entity;
     }
 

@@ -12,15 +12,15 @@ import com.xiangyang.httpclient.client.PostClient;
 import com.xiangyang.httpclient.client.PutClient;
 import com.xiangyang.httpclient.model.HttpResponseResult;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.AbstractResponseHandler;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+//import org.apache.http.HttpEntity;
+//import org.apache.http.HttpRequest;
+//import org.apache.http.HttpResponse;
+//import org.apache.http.client.ResponseHandler;
+//import org.apache.http.client.methods.CloseableHttpResponse;
+//import org.apache.http.client.methods.HttpUriRequest;
+//import org.apache.http.impl.client.AbstractResponseHandler;
+//import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.util.EntityUtils;
 
 public class XiangYangHttpClient {
     public static <T> PostClient<T> restForPost(Class<T> responseObjClass) {

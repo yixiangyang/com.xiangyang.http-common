@@ -1,9 +1,12 @@
 package com.xiangyang.httpclient.utils;
 
 import com.xiangyang.httpclient.CollectionUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
+//import org.apache.http.NameValuePair;
+//import org.apache.http.client.utils.URLEncodedUtils;
+//import org.apache.http.message.BasicNameValuePair;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -11,6 +14,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.*;
 
 public class URL implements Serializable {
@@ -30,7 +34,7 @@ public class URL implements Serializable {
 
     private final Map<String, String> parameters;
 
-    private String paramCharset;
+    private Charset paramCharset;
 
     public String getProtocol() {
         return this.protocol;
@@ -60,7 +64,7 @@ public class URL implements Serializable {
         return this.parameters;
     }
 
-    public String getParamCharset() {
+    public Charset getParamCharset() {
         return this.paramCharset;
     }
 
@@ -366,7 +370,7 @@ public class URL implements Serializable {
         return buf.toString();
     }
 
-    public URL setParamCharset(String paramCharset) {
+    public URL setParamCharset(Charset paramCharset) {
         this.paramCharset = paramCharset;
         return this;
     }

@@ -6,11 +6,16 @@ import java.util.Map;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
 import com.xiangyang.httpclient.utils.URL;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.omg.CORBA.portable.ResponseHandler;
+//import org.apache.http.HttpEntity;
+//import org.apache.http.client.ResponseHandler;
+//import org.apache.http.client.methods.HttpPut;
+//import org.apache.http.client.methods.HttpUriRequest;
+//import org.apache.http.entity.StringEntity;
 
 public class PutClient<T> extends AbstractHttpClient<T> {
     private HttpPut httpPut;

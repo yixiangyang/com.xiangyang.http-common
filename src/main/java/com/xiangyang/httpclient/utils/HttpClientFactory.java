@@ -7,22 +7,42 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.xiangyang.httpclient.HttpclientMonitor;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.ConnectTimeoutException;
+import org.apache.hc.client5.http.HttpRequestRetryStrategy;
+import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.NoHttpResponseException;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.util.TimeValue;
+//import org.apache.http.HttpHost;
+//import org.apache.http.HttpRequest;
+//import org.apache.http.client.HttpRequestRetryHandler;
+//import org.apache.http.client.config.RequestConfig;
+//import org.apache.http.client.protocol.HttpClientContext;
+//import org.apache.http.config.Registry;
+//import org.apache.http.config.RegistryBuilder;
+//import org.apache.http.conn.HttpClientConnectionManager;
+//import org.apache.http.conn.routing.HttpRoute;
+//import org.apache.http.conn.socket.ConnectionSocketFactory;
+//import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+//import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+//import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.impl.client.HttpClients;
+//import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+//import org.apache.http.protocol.HttpContext;
 
 public class HttpClientFactory {
     private static volatile Config config;
@@ -73,7 +93,7 @@ public class HttpClientFactory {
         if (null == closeableHttpClient)
             synchronized (syncLock) {
                 if (null == closeableHttpClient)
-                    closeableHttpClient = HttpClients.custom().setConnectionManager((HttpClientConnectionManager)poolingClientConnectionManager).setDefaultRequestConfig(requestConfig).setRetryHandler(getCustomHttpRequestRetryHandler(config)).setConnectionManagerShared(true).build();
+                    closeableHttpClient = HttpClients.custom().setConnectionManager((HttpClientConnectionManager)poolingClientConnectionManager).setDefaultRequestConfig(requestConfig).setRetryStrategy(getCustomHttpRequestRetryHandler(config)).setConnectionManagerShared(true).build();
             }
         return closeableHttpClient;
     }
@@ -86,31 +106,68 @@ public class HttpClientFactory {
     public static Config getGlobalConfig() {
         return config;
     }
+    // TODO 重试机制
 
-    public static HttpRequestRetryHandler getCustomHttpRequestRetryHandler(final Config config) {
-        return new HttpRequestRetryHandler() {
-            public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-                if (executionCount > ((config == null) ? 3 : config.getRetryRequestCount()))
+    public static HttpRequestRetryStrategy getCustomHttpRequestRetryHandler(final Config config){
+        return new HttpRequestRetryStrategy() {
+            @Override
+            public boolean retryRequest(HttpRequest request, IOException exception, int execCount, HttpContext context) {
+                if (execCount > ((config == null) ? 3 : config.getRetryRequestCount()))
                     return false;
                 if (exception instanceof java.io.InterruptedIOException)
                     return false;
                 if (exception instanceof java.net.UnknownHostException)
                     return false;
-                if (exception instanceof org.apache.http.conn.ConnectTimeoutException)
+                if (exception instanceof ConnectTimeoutException)
                     return false;
                 if (exception instanceof javax.net.ssl.SSLException)
                     return false;
-                if (exception instanceof org.apache.http.NoHttpResponseException)
+                if (exception instanceof NoHttpResponseException)
                     return true;
-                HttpClientContext clientContext = HttpClientContext.adapt(context);
-                HttpRequest request = clientContext.getRequest();
-                boolean idempotent = !(request instanceof org.apache.http.HttpEntityEnclosingRequest);
-                if (idempotent)
-                    return true;
+//                HttpClientContext clientContext = HttpClientContext.adapt(context);
+//                HttpRequest request = clientContext.getRequest();
+//                boolean idempotent = !(request instanceof Httpenti);
+//                if (idempotent)
+//                    return true;
                 return false;
+            }
+
+            @Override
+            public boolean retryRequest(HttpResponse response, int execCount, HttpContext context) {
+                return false;
+            }
+
+            @Override
+            public TimeValue getRetryInterval(HttpResponse response, int execCount, HttpContext context) {
+                return null;
             }
         };
     }
+
+//    public static HttpRequestRetryHandler getCustomHttpRequestRetryHandler(final Config config) {
+//        return new HttpRequestRetryHandler() {
+//            public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+//                if (executionCount > ((config == null) ? 3 : config.getRetryRequestCount()))
+//                    return false;
+//                if (exception instanceof java.io.InterruptedIOException)
+//                    return false;
+//                if (exception instanceof java.net.UnknownHostException)
+//                    return false;
+//                if (exception instanceof ConnectTimeoutException)
+//                    return false;
+//                if (exception instanceof javax.net.ssl.SSLException)
+//                    return false;
+//                if (exception instanceof NoHttpResponseException)
+//                    return true;
+//                HttpClientContext clientContext = HttpClientContext.adapt(context);
+//                HttpRequest request = clientContext.getRequest();
+//                boolean idempotent = !(request instanceof HttpEntityEnclosingRequest);
+//                if (idempotent)
+//                    return true;
+//                return false;
+//            }
+//        };
+//    }
 
     public static void destroyConnectionManager() {
         if (poolingClientConnectionManager != null)
@@ -149,8 +206,9 @@ public class HttpClientFactory {
             }
             httpClientScheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
                 public void run() {
-                    HttpClientFactory.poolingClientConnectionManager.closeExpiredConnections();
-                    HttpClientFactory.poolingClientConnectionManager.closeIdleConnections(20L, TimeUnit.SECONDS);
+                    HttpClientFactory.poolingClientConnectionManager.close();
+//                    HttpClientFactory.poolingClientConnectionManager.closeExpiredConnections();
+//                    HttpClientFactory.poolingClientConnectionManager.closeIdleConnections(20L, TimeUnit.SECONDS);
                 }
             },30L, 60L, TimeUnit.SECONDS);
         }

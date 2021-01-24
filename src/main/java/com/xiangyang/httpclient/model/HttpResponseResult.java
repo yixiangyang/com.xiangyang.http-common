@@ -1,8 +1,10 @@
 package com.xiangyang.httpclient.model;
 
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+
 import java.io.Serializable;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
+//import org.apache.http.StatusLine;
+//import org.apache.http.client.methods.CloseableHttpResponse;
 
 public class HttpResponseResult<T> implements Serializable {
     private static final long serialVersionUID = 8056837669737531875L;
@@ -50,8 +52,9 @@ public class HttpResponseResult<T> implements Serializable {
     }
 
     public HttpResponseResult<T> resolve(CloseableHttpResponse httpResponse, T vo) {
-        StatusLine statusLine = httpResponse.getStatusLine();
-        this.resultCode = statusLine.getStatusCode();
+//        StatusLine statusLine = httpResponse.getStatusLine();
+//        this.resultCode = statusLine.getStatusCode();
+        this.resultCode = httpResponse.getCode();
         this.responseVo = vo;
         return this;
     }
