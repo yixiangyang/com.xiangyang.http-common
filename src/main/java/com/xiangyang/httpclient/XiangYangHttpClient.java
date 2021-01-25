@@ -128,8 +128,8 @@ public class XiangYangHttpClient {
 //            transaction.addData("rpcEntryUrl", zipkinContext.getRpcEntryUrl());
 //            logZipkinInHttpHeader(request, span);
             result = httpClient.execute(request);
+//            System.out.println("gggggggggggggggggg:"+httpEntity);
             T t = (T)responseHandler.handleResponse((ClassicHttpResponse) result);
-            System.out.println("gggg======"+t.toString());
             responseResult.resolve(result, t);
 //            transaction.setStatus("0");
         } catch (Exception e) {
