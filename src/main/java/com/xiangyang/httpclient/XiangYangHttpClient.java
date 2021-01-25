@@ -1,6 +1,7 @@
 package com.xiangyang.httpclient;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
 import java.io.IOException;
@@ -128,6 +129,8 @@ public class XiangYangHttpClient {
 //            transaction.addData("rpcEntryUrl", zipkinContext.getRpcEntryUrl());
 //            logZipkinInHttpHeader(request, span);
             result = httpClient.execute(request);
+//            JSONObject json = JSONObject.parseObject( EntityUtils.toString(result.getEntity()));
+//                System.out.println(json);
 //            System.out.println("gggggggggggggggggg:"+httpEntity);
             T t = (T)responseHandler.handleResponse((ClassicHttpResponse) result);
             responseResult.resolve(result, t);
