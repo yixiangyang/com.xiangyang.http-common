@@ -5,6 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import com.xiangyang.httpclient.client.DeleteClient;
 import com.xiangyang.httpclient.client.GetClient;
@@ -12,15 +13,14 @@ import com.xiangyang.httpclient.client.PostClient;
 import com.xiangyang.httpclient.client.PutClient;
 import com.xiangyang.httpclient.model.HttpResponseResult;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
-//import org.apache.http.HttpEntity;
-//import org.apache.http.HttpRequest;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.CloseableHttpResponse;
-//import org.apache.http.client.methods.HttpUriRequest;
-//import org.apache.http.impl.client.AbstractResponseHandler;
-//import org.apache.http.impl.client.CloseableHttpClient;
-//import org.apache.http.util.EntityUtils;
+import lombok.SneakyThrows;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 public class XiangYangHttpClient {
     public static <T> PostClient<T> restForPost(Class<T> responseObjClass) {
@@ -71,17 +71,28 @@ public class XiangYangHttpClient {
         return restForDelete(String.class);
     }
 
-    public static <T> ResponseHandler<T> getJsonResponseHandler(final Class<T> clz) {
-        return (ResponseHandler<T>)new AbstractResponseHandler<T>() {
-            public T handleEntity(HttpEntity entity) throws IOException {
-                String result = EntityUtils.toString(entity);
+    public static <T> HttpClientResponseHandler<T> getJsonResponseHandler(final Class<T> clz) {
+        return (HttpClientResponseHandler<T> )new AbstractHttpClientResponseHandler<T>(){
+
+            @SneakyThrows
+            @Override
+            public T handleEntity(HttpEntity httpEntity) throws IOException {
+                String result = EntityUtils.toString(httpEntity);
                 return (T)JSON.parseObject(result, clz);
             }
         };
+//        return (HttpClientResponseHandler<T>)new AbstractHttpClientResponseHandler<T>() {
+//            public T handleEntity(HttpEntity entity) throws IOException {
+//                String result = EntityUtils.toString(entity);
+//                return (T)JSON.parseObject(result, clz);
+//            }
+//        };
     }
 
-    public static <T> ResponseHandler<T> getJsonResponseHandler(final TypeReference<T> typeReference) {
-        return (ResponseHandler<T>)new AbstractResponseHandler<T>() {
+    public static <T> HttpClientResponseHandler<T> getJsonResponseHandler(final TypeReference<T> typeReference) {
+        return (HttpClientResponseHandler<T>)new AbstractHttpClientResponseHandler<T>() {
+            @SneakyThrows
+            @Override
             public T handleEntity(HttpEntity entity) throws IOException {
                 String result = EntityUtils.toString(entity);
                 return (T)JSON.parseObject(result, typeReference, new com.alibaba.fastjson.parser.Feature[0]);
@@ -89,24 +100,24 @@ public class XiangYangHttpClient {
         };
     }
 
-    public static <T> HttpResponseResult<T> execute(HttpUriRequest request, Object input, ResponseHandler<T> responseHandler) throws IOException {
+    public static <T> HttpResponseResult<T> execute(HttpUriRequest request, Object input, HttpClientResponseHandler<T> responseHandler) throws IOException, URISyntaxException, HttpException {
         CloseableHttpClient httpClient = HttpClientFactory.getHttpClient();
         return execute(httpClient, request, input, responseHandler);
     }
 
-    public static <T> HttpResponseResult<T> execute(HttpUriRequest request, Object input, ResponseHandler<T> responseHandler, HttpClientFactory.Config config) throws IOException {
+    public static <T> HttpResponseResult<T> execute(HttpUriRequest request, Object input, HttpClientResponseHandler<T> responseHandler, HttpClientFactory.Config config) throws IOException, URISyntaxException, HttpException {
         CloseableHttpClient httpClient = HttpClientFactory.getHttpClient(config);
         return execute(httpClient, request, input, responseHandler);
     }
 
-    private static <T> HttpResponseResult<T> execute(CloseableHttpClient httpClient, HttpUriRequest request, Object input, ResponseHandler<T> responseHandler) throws IOException {
+    private static <T> HttpResponseResult<T> execute(CloseableHttpClient httpClient, HttpUriRequest request, Object input, HttpClientResponseHandler<T> responseHandler) throws IOException, URISyntaxException, HttpException {
         CloseableHttpResponse result = null;
         String url = getUrl((HttpRequest)request);
 //        Transaction transaction = Cat.newTransaction("HttpClientService", url);
         long startTime = System.currentTimeMillis();
         HttpResponseResult<T> responseResult = new HttpResponseResult();
         try {
-            URI uri = request.getURI();
+            URI uri = request.getUri();
             String uriStr = uri.toString();
 //            String rpcEntryUrl = Tracer.genRpcEntryUrl(uriStr);
 //            ZipkinContext zipkinContext = getZipkinContext(rpcEntryUrl);
@@ -117,7 +128,7 @@ public class XiangYangHttpClient {
 //            transaction.addData("rpcEntryUrl", zipkinContext.getRpcEntryUrl());
 //            logZipkinInHttpHeader(request, span);
             result = httpClient.execute(request);
-            T t = (T)responseHandler.handleResponse((HttpResponse)result);
+            T t = (T)responseHandler.handleResponse((ClassicHttpResponse) result);
             System.out.println("gggg======"+t.toString());
             responseResult.resolve(result, t);
 //            transaction.setStatus("0");
@@ -130,7 +141,9 @@ public class XiangYangHttpClient {
             if (result == null) {
 //                transaction.setStatus("1");
             } else {
-                int statusCode = result.getStatusLine().getStatusCode();
+                int statusCode = result.getCode();
+                System.out.println("这个是返回的code:"+statusCode);
+//                int statusCode = result.getStatusLine().getStatusCode();
 //                if (statusCode >= 200 && statusCode < 300) {
 //                    transaction.setStatus("0");
 //                } else {
@@ -144,7 +157,8 @@ public class XiangYangHttpClient {
     }
 
     private static String getUrl(HttpRequest request) {
-        String uri = request.getRequestLine().getUri();
+        String uri = request.getRequestUri();
+//        String uri = request.getRequestLine().getUri();
         int index = uri.indexOf("?");
         if (index > -1)
             uri = uri.substring(0, index);

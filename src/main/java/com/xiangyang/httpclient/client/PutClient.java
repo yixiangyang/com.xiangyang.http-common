@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.omg.CORBA.portable.ResponseHandler;
 //import org.apache.http.HttpEntity;
@@ -114,7 +115,7 @@ public class PutClient<T> extends AbstractHttpClient<T> {
         return this;
     }
 
-    public PutClient<T> withResponseHandler(ResponseHandler<T> responseHandler) {
+    public PutClient<T> withResponseHandler(HttpClientResponseHandler<T> responseHandler) {
         super.setResponseHandler(responseHandler);
         return this;
     }
@@ -136,8 +137,8 @@ public class PutClient<T> extends AbstractHttpClient<T> {
             Object requestBodyObj = getRequestBodyObj();
             if (requestBodyObj != null) {
                 StringEntity stringEntry = getStringEntry(requestBodyObj);
-                if (this.forJson)
-                    stringEntry.setContentType("application/json");
+//                if (this.forJson)
+//                    stringEntry.setContentType("application/json");
                 stringEntity = stringEntry;
             }
         }

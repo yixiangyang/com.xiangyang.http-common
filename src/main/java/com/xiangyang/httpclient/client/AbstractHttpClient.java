@@ -209,9 +209,9 @@ abstract class AbstractHttpClient<T> {
     }
 
     public static StringEntity getStringEntry(Object obj) {
-        ContentType contentType = ContentType.create("application/x-www-form-urlencoded","UTF-8");
-        StringEntity ee = new StringEntity(JSON.toJSONString(obj),contentType,"UTF-8",false);
-//        StringEntity entity = new StringEntity(JSON.toJSONString(obj), Charset.forName("UTF-8"));
+//        ContentType contentType = ContentType.create("application/x-www-form-urlencoded","UTF-8");
+//        StringEntity ee = new StringEntity(JSON.toJSONString(obj),contentType,"UTF-8",false);
+        StringEntity entity = new StringEntity(JSON.toJSONString(obj), Charset.forName("UTF-8"));
 //        entity.setContentEncoding("UTF-8");
         return entity;
     }

@@ -6,11 +6,16 @@ import java.util.Map;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
 import com.xiangyang.httpclient.utils.URL;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+//import org.apache.http.HttpEntity;
+//import org.apache.http.client.ResponseHandler;
+//import org.apache.http.client.methods.HttpPost;
+//import org.apache.http.client.methods.HttpUriRequest;
+//import org.apache.http.entity.StringEntity;
 
 public class PostClient<T> extends AbstractHttpClient<T> {
     private HttpPost httpPost;
@@ -109,7 +114,7 @@ public class PostClient<T> extends AbstractHttpClient<T> {
         return this;
     }
 
-    public PostClient<T> withResponseHandler(ResponseHandler<T> responseHandler) {
+    public PostClient<T> withResponseHandler(HttpClientResponseHandler<T> responseHandler) {
         super.setResponseHandler(responseHandler);
         return this;
     }
@@ -132,7 +137,8 @@ public class PostClient<T> extends AbstractHttpClient<T> {
             if (requestBodyObj != null) {
                 StringEntity stringEntry = getStringEntry(requestBodyObj);
                 if (this.forJson)
-                    stringEntry.setContentType("application/json");
+//                    stringEntity = new StringEntity()
+//                    stringEntry.setContentType("application/json");
                 stringEntity = stringEntry;
             }
         }

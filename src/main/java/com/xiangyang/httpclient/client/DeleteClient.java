@@ -4,9 +4,12 @@ import com.alibaba.fastjson.TypeReference;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
 import com.xiangyang.httpclient.utils.URL;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+//import org.apache.http.client.ResponseHandler;
+//import org.apache.http.client.methods.HttpDelete;
+//import org.apache.http.client.methods.HttpUriRequest;
 
 import java.util.Map;
 
@@ -100,7 +103,7 @@ public class DeleteClient<T> extends AbstractHttpClient<T> {
         return this;
     }
 
-    public DeleteClient<T> withResponseHandler(ResponseHandler<T> responseHandler) {
+    public DeleteClient<T> withResponseHandler(HttpClientResponseHandler<T> responseHandler) {
         super.setResponseHandler(responseHandler);
         return this;
     }

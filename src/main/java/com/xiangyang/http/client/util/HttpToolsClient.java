@@ -10,23 +10,25 @@ import com.xiangyang.httpclient.utils.URL;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.AbstractResponseHandler;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+
+import lombok.SneakyThrows;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.entity.mime.ContentBody;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.entity.mime.StringBody;
+import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 
 public class HttpToolsClient {
     public static HttpResponseResult<String> getStrByGetUrl(String requestUrl) {
@@ -37,11 +39,11 @@ public class HttpToolsClient {
         return getStrByGetUrl(requestUrl, null, connectTimeOut, readTimeOut);
     }
 
-    public static HttpResponseResult<String> getStrByGetUrl(String requestUrl, String charset) {
+    public static HttpResponseResult<String> getStrByGetUrl(String requestUrl, Charset charset) {
         return getStrByGetUrl(requestUrl, charset, null, null);
     }
 
-    public static HttpResponseResult<String> getStrByGetUrl(String requestUrl, String charset, Integer connectTimeOut, Integer readTimeOut) {
+    public static HttpResponseResult<String> getStrByGetUrl(String requestUrl, Charset charset, Integer connectTimeOut, Integer readTimeOut) {
         return getStrByGetParameters(requestUrl, null, charset, connectTimeOut, readTimeOut);
     }
 
@@ -49,7 +51,7 @@ public class HttpToolsClient {
         return getStrByGetParameters(requestUrl, paramMap, null);
     }
 
-    public static HttpResponseResult<String> getStrByGetParameters(String requestUrl, Map<String, Object> paramMap, String charset) {
+    public static HttpResponseResult<String> getStrByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset) {
         return getStrByGetParameters(requestUrl, paramMap, charset, null, null);
     }
 
@@ -57,7 +59,7 @@ public class HttpToolsClient {
         return getStrByGetParameters(requestUrl, paramMap, null, Integer.valueOf(connectTimeOut), Integer.valueOf(readTimeOut));
     }
 
-    public static HttpResponseResult<String> getStrByGetParameters(String requestUrl, Map<String, Object> paramMap, String charset, Integer connectTimeOut, Integer readTimeOut) {
+    public static HttpResponseResult<String> getStrByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset, Integer connectTimeOut, Integer readTimeOut) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForGet()
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .addUrlParameters(paramMap)
@@ -69,7 +71,7 @@ public class HttpToolsClient {
         return getObjectByGetUrl(requestUrl, clazz);
     }
 
-    public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, String charset, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, Charset charset, Class<T> clazz) {
         return getObjectByGetUrl(requestUrl, charset, null, null, clazz);
     }
 
@@ -77,7 +79,7 @@ public class HttpToolsClient {
         return getObjectByGetUrl(requestUrl, null, Integer.valueOf(connectTimeOut), Integer.valueOf(readTimeOut), clazz);
     }
 
-    public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, String charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, Charset charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForGet(clazz)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withConfig(HttpClientFactory.Config.builder().connectTimeout(connectTimeOut).readTimeout(readTimeOut).build())
@@ -88,7 +90,7 @@ public class HttpToolsClient {
         return getGenericObjectByGetParameters(requestUrl, paramMap, null, type, features);
     }
 
-    public static <T> HttpResponseResult<T> getGenericObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, String charset, TypeReference<T> type, Feature... features) {
+    public static <T> HttpResponseResult<T> getGenericObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset, TypeReference<T> type, Feature... features) {
         return getGenericObjectByGetParameters(requestUrl, paramMap, charset, null, null, type, features);
     }
 
@@ -96,17 +98,26 @@ public class HttpToolsClient {
         return getGenericObjectByGetParameters(requestUrl, paramMap, null, connectTimeOut, readTimeOut, type, features);
     }
 
-    public static <T> ResponseHandler<T> getJsonResponseHandler(final Class<T> clz, Feature... features) {
-        return (ResponseHandler<T>)new AbstractResponseHandler<T>() {
-            public T handleEntity(HttpEntity entity) throws IOException {
-                String result = EntityUtils.toString(entity);
+    public static <T> HttpClientResponseHandler<T> getJsonResponseHandler(final Class<T> clz, Feature... features) {
+        return (HttpClientResponseHandler<T>)new AbstractHttpClientResponseHandler<T>() {
+            @SneakyThrows
+            @Override
+            public T handleEntity(HttpEntity httpEntity) throws IOException {
+                String result = EntityUtils.toString(httpEntity);
                 return (T)JSON.parseObject(result, clz, features);
             }
+
+//            public T handleEntity(HttpEntity entity) throws IOException {
+//                String result = EntityUtils.toString(entity);
+//                return (T)JSON.parseObject(result, clz, features);
+//            }
         };
     }
 
-    public static <T> ResponseHandler<T> getJsonResponseHandler(final TypeReference<T> typeReference, Feature... features) {
-        return (ResponseHandler<T>)new AbstractResponseHandler<T>() {
+    public static <T> HttpClientResponseHandler<T> getJsonResponseHandler(final TypeReference<T> typeReference, Feature... features) {
+        return (HttpClientResponseHandler<T>)new AbstractHttpClientResponseHandler<T>() {
+            @SneakyThrows
+            @Override
             public T handleEntity(HttpEntity entity) throws IOException {
                 String result = EntityUtils.toString(entity);
                 return (T)JSON.parseObject(result, typeReference, features);
@@ -114,7 +125,7 @@ public class HttpToolsClient {
         };
     }
 
-    public static <T> HttpResponseResult<T> getGenericObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, String charset, Integer connectTimeOut, Integer readTimeOut, TypeReference<T> type, Feature... features) {
+    public static <T> HttpResponseResult<T> getGenericObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset, Integer connectTimeOut, Integer readTimeOut, TypeReference<T> type, Feature... features) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForGet(type)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withResponseHandler(getJsonResponseHandler(type, features))
@@ -126,7 +137,7 @@ public class HttpToolsClient {
         return getObjectByGetParameters(requestUrl, paramMap, null, clazz);
     }
 
-    public static <T> HttpResponseResult<T> getObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, String charset, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> getObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset, Class<T> clazz) {
         return getObjectByGetParameters(requestUrl, paramMap, charset, null, null, clazz);
     }
 
@@ -134,7 +145,7 @@ public class HttpToolsClient {
         return getObjectByGetParameters(requestUrl, paramMap, null, connectTimeOut, readTimeOut, clazz);
     }
 
-    public static <T> HttpResponseResult<T> getObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, String charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> getObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForGet(clazz)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withConfig(HttpClientFactory.Config.builder().connectTimeout(connectTimeOut).readTimeout(readTimeOut).build())
@@ -142,15 +153,15 @@ public class HttpToolsClient {
     }
 
     public static HttpResponseResult<String> post(String requestUrl, Map<String, Object> paramMap) {
-        return post(requestUrl, paramMap, (String)null);
+        return post(requestUrl, paramMap, (Charset) null);
     }
 
-    public static HttpResponseResult<String> post(String requestUrl, Map<String, Object> paramMap, String charset) {
-        return post(requestUrl, paramMap, charset, (Integer)null, (Integer)null);
+    public static HttpResponseResult<String> post(String requestUrl, Map<String, Object> paramMap, Charset charset) {
+        return post(requestUrl, paramMap, charset, (TypeReference<String>) null, null);
     }
 
     public static HttpResponseResult<String> post(String requestUrl, Map<String, Object> paramMap, int connectTimeOut, int readTimeOut) {
-        return post(requestUrl, paramMap, (String)null, Integer.valueOf(connectTimeOut), Integer.valueOf(readTimeOut));
+        return post(requestUrl, paramMap, null, Integer.valueOf(connectTimeOut), Integer.valueOf(readTimeOut));
     }
 
     public static List<NameValuePair> convertMapToNameValuePair(Map<String, Object> requestParams) {
@@ -169,16 +180,11 @@ public class HttpToolsClient {
         return null;
     }
 
-    public static HttpResponseResult<String> post(String requestUrl, Map<String, Object> paramMap, String charset, Integer connectTimeOut, Integer readTimeOut) {
+    public static HttpResponseResult<String> post(String requestUrl, Map<String, Object> paramMap, Charset charset, Integer connectTimeOut, Integer readTimeOut) {
         UrlEncodedFormEntity formEntity;
         List<NameValuePair> formParams = convertMapToNameValuePair(paramMap);
         HttpResponseResult<String> responseResult = new HttpResponseResult();
-        try {
-            formEntity = new UrlEncodedFormEntity(formParams, charset);
-        } catch (UnsupportedEncodingException var9) {
-            responseResult.setResultCode(-1);
-            return responseResult;
-        }
+        formEntity = new UrlEncodedFormEntity(formParams, charset);
         return HttpResponseResult.transform(XiangYangHttpClient.restForPost()
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withHttpEntity((HttpEntity)formEntity)
@@ -187,27 +193,22 @@ public class HttpToolsClient {
     }
 
     public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, TypeReference<T> type, Feature... features) {
-        return post(requestUrl, paramMap, (String)null, type, features);
+        return post(requestUrl, paramMap, null, type, features);
     }
 
-    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, String charset, TypeReference<T> type, Feature... features) {
+    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, Charset charset, TypeReference<T> type, Feature... features) {
         return post(requestUrl, paramMap, charset, ((Integer)null).intValue(), ((Integer)null).intValue(), type, features);
     }
 
     public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, int connectTimeOut, int readTimeOut, TypeReference<T> type, Feature... features) {
-        return post(requestUrl, paramMap, (String)null, connectTimeOut, readTimeOut, type, features);
+        return post(requestUrl, paramMap, null, connectTimeOut, readTimeOut, type, features);
     }
 
-    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, String charset, int connectTimeOut, int readTimeOut, TypeReference<T> type, Feature... features) {
+    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, Charset charset, int connectTimeOut, int readTimeOut, TypeReference<T> type, Feature... features) {
         UrlEncodedFormEntity formEntity;
         List<NameValuePair> formParams = convertMapToNameValuePair(paramMap);
         HttpResponseResult<T> responseResult = new HttpResponseResult();
-        try {
-            formEntity = new UrlEncodedFormEntity(formParams, charset);
-        } catch (UnsupportedEncodingException var9) {
-            responseResult.setResultCode(-1);
-            return responseResult;
-        }
+        formEntity = new UrlEncodedFormEntity(formParams, charset);
         return HttpResponseResult.transform(XiangYangHttpClient.restForPost(type)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withHttpEntity((HttpEntity)formEntity)
@@ -217,23 +218,18 @@ public class HttpToolsClient {
     }
 
     public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, Class<T> clazz) {
-        return post(requestUrl, paramMap, (String)null, clazz);
+        return post(requestUrl, paramMap, null, clazz);
     }
 
-    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, String charset, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, Charset charset, Class<T> clazz) {
         return post(requestUrl, paramMap, charset, (Integer)null, (Integer)null, clazz, new Feature[0]);
     }
 
-    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, String charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz, Feature... features) {
+    public static <T> HttpResponseResult<T> post(String requestUrl, Map<String, Object> paramMap, Charset charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz, Feature... features) {
         UrlEncodedFormEntity formEntity;
         List<NameValuePair> formParams = convertMapToNameValuePair(paramMap);
         HttpResponseResult<T> responseResult = new HttpResponseResult();
-        try {
-            formEntity = new UrlEncodedFormEntity(formParams, charset);
-        } catch (UnsupportedEncodingException var9) {
-            responseResult.setResultCode(-1);
-            return responseResult;
-        }
+        formEntity = new UrlEncodedFormEntity(formParams, charset);
         return HttpResponseResult.transform(XiangYangHttpClient.restForPost(clazz)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withHttpEntity((HttpEntity)formEntity)
@@ -243,10 +239,10 @@ public class HttpToolsClient {
     }
 
     public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent) {
-        return getStrByPostRaw(requestUrl, jsonContent, (String)null);
+        return getStrByPostRaw(requestUrl, jsonContent, (Charset) null);
     }
 
-    public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, String charset) {
+    public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, Charset charset) {
         return getStrByPostRaw(requestUrl, jsonContent, charset, null, null, (Map<String, String>)null);
     }
 
@@ -255,10 +251,10 @@ public class HttpToolsClient {
     }
 
     public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, Map<String, String> headsMap) {
-        return getStrByPostRaw(requestUrl, jsonContent, (String)null, headsMap);
+        return getStrByPostRaw(requestUrl, jsonContent, null, headsMap);
     }
 
-    public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, String charset, Map<String, String> headsMap) {
+    public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, Charset charset, Map<String, String> headsMap) {
         return getStrByPostRaw(requestUrl, jsonContent, charset, null, null, headsMap);
     }
 
@@ -266,7 +262,7 @@ public class HttpToolsClient {
         return getStrByPostRaw(requestUrl, jsonContent, null, Integer.valueOf(conncetTimeOut), Integer.valueOf(readTimeOut), headsMap);
     }
 
-    public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, String charset, Integer conncetTimeOut, Integer readTimeOut, Map<String, String> headsMap) {
+    public static HttpResponseResult<String> getStrByPostRaw(String requestUrl, String jsonContent, Charset charset, Integer conncetTimeOut, Integer readTimeOut, Map<String, String> headsMap) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForPost()
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .addHeaders(headsMap)
@@ -279,7 +275,7 @@ public class HttpToolsClient {
         return getGenericObjectPostRaw(requestUrl, jsonContent, null, type, features);
     }
 
-    public static <T> HttpResponseResult<T> getGenericObjectPostRaw(String requestUrl, String jsonContent, String charset, TypeReference<T> type, Feature... features) {
+    public static <T> HttpResponseResult<T> getGenericObjectPostRaw(String requestUrl, String jsonContent, Charset charset, TypeReference<T> type, Feature... features) {
         return getGenericObjectPostRaw(requestUrl, jsonContent, charset, null, null, type, features);
     }
 
@@ -287,7 +283,9 @@ public class HttpToolsClient {
         return getGenericObjectPostRaw(requestUrl, jsonContent, null, Integer.valueOf(conncetTimeOut), Integer.valueOf(readTimeOut), type, features);
     }
 
-    public static <T> HttpResponseResult<T> getGenericObjectPostRaw(String requestUrl, String jsonContent, String charset, Integer conncetTimeOut, Integer readTimeOut, TypeReference<T> type, Feature... features) {
+    public static <T> HttpResponseResult<T> getGenericObjectPostRaw(String requestUrl, String jsonContent, Charset charset, Integer conncetTimeOut, Integer readTimeOut, TypeReference<T> type, Feature... features) {
+//        HttpResponseResult.transform(XiangYangHttpClient.restForPost(type)
+//                .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString()));
         return HttpResponseResult.transform(XiangYangHttpClient.restForPost(type)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withHttpEntity((HttpEntity)new StringEntity(jsonContent, charset))
@@ -300,7 +298,7 @@ public class HttpToolsClient {
         return getObjectByPostRaw(requestUrl, jsonContent, null, clazz);
     }
 
-    public static <T> HttpResponseResult<T> getObjectByPostRaw(String requestUrl, String jsonContent, String charset, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> getObjectByPostRaw(String requestUrl, String jsonContent, Charset charset, Class<T> clazz) {
         return getObjectByPostRaw(requestUrl, jsonContent, charset, ((Integer)null).intValue(), ((Integer)null).intValue(), clazz);
     }
 
@@ -308,7 +306,7 @@ public class HttpToolsClient {
         return getObjectByPostRaw(requestUrl, jsonContent, null, conncetTimeOut, readTimeOut, clazz);
     }
 
-    public static <T> HttpResponseResult<T> getObjectByPostRaw(String requestUrl, String jsonContent, String charset, int conncetTimeOut, int readTimeOut, Class<T> clazz) {
+    public static <T> HttpResponseResult<T> getObjectByPostRaw(String requestUrl, String jsonContent, Charset charset, int conncetTimeOut, int readTimeOut, Class<T> clazz) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForPost(clazz)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
                 .withHttpEntity((HttpEntity)new StringEntity(jsonContent, charset))
@@ -320,7 +318,7 @@ public class HttpToolsClient {
         return getStrByPostFormData(requestUrl, parasmMap, null);
     }
 
-    public static HttpResponseResult<String> getStrByPostFormData(String requestUrl, Map<String, Object> parasmMap, String charset) {
+    public static HttpResponseResult<String> getStrByPostFormData(String requestUrl, Map<String, Object> parasmMap, Charset charset) {
         return getStrByPostFormData(requestUrl, parasmMap, charset, (Integer)null, (Integer)null, (Map<String, String>)null);
     }
 
@@ -328,11 +326,11 @@ public class HttpToolsClient {
         return getStrByPostFormData(requestUrl, parasmMap, null, conncetTimeOut, readTimeOut, (Map<String, String>)null);
     }
 
-    public static HttpResponseResult<String> getStrByPostFormData(String requestUrl, Map<String, Object> parasmMap, String charset, Integer conncetTimeOut, Integer readTimeOut, Map<String, String> headsMap) {
+    public static HttpResponseResult<String> getStrByPostFormData(String requestUrl, Map<String, Object> parasmMap, Charset charset, Integer conncetTimeOut, Integer readTimeOut, Map<String, String> headsMap) {
         return getResultByPostFormData(requestUrl, parasmMap, conncetTimeOut, readTimeOut, headsMap, ContentType.APPLICATION_OCTET_STREAM);
     }
 
-    public static HttpResponseResult<String> getStrByPostFormDataAndContentType(String requestUrl, Map<String, Object> parasmMap, String charset, Integer conncetTimeOut, Integer readTimeOut, Map<String, String> headsMap, ContentType contentType) {
+    public static HttpResponseResult<String> getStrByPostFormDataAndContentType(String requestUrl, Map<String, Object> parasmMap, Charset charset, Integer conncetTimeOut, Integer readTimeOut, Map<String, String> headsMap, ContentType contentType) {
         return getResultByPostFormData(requestUrl, parasmMap, conncetTimeOut, readTimeOut, headsMap, contentType);
     }
 
