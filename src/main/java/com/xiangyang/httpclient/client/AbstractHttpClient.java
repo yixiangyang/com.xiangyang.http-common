@@ -11,21 +11,13 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
-import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-//import org.apache.http.HttpEntity;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.HttpUriRequest;
-//import org.apache.http.entity.StringEntity;
-//import org.apache.http.impl.client.BasicResponseHandler;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.hc.core5.http.ContentType.APPLICATION_FORM_URLENCODED;
 
 abstract class AbstractHttpClient<T> {
     protected static final String HEADER_CONTENT_TYPE_APPLICATION_JONS = "application/json";

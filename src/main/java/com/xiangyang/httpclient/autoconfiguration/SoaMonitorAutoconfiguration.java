@@ -1,6 +1,5 @@
 package com.xiangyang.httpclient.autoconfiguration;
 
-import com.xiangyang.httpclient.ApolloConfigUtil;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,38 +17,38 @@ public class SoaMonitorAutoconfiguration {
     }
 
     private Integer getMaxTotal() {
-        return ApolloConfigUtil.getIntegerConfig("maxTotal", Integer.valueOf(500));
+        return Integer.valueOf(500);
     }
 
     private Integer getDefaultMaxPerRoute() {
-        return ApolloConfigUtil.getIntegerConfig("defaultMaxPerRoute", Integer.valueOf(50));
+        return  Integer.valueOf(50);
     }
 
     private Integer getConnectTimeout() {
-        return ApolloConfigUtil.getIntegerConfig("connectTimeout", Integer.valueOf(5000));
+        return  Integer.valueOf(5000);
     }
 
     private Integer getReadTimeout() {
-        return ApolloConfigUtil.getIntegerConfig("readTimeout", Integer.valueOf(5000));
+        return  Integer.valueOf(5000);
     }
 
     private Integer getConnectionRequestTimeout() {
-        return ApolloConfigUtil.getIntegerConfig("connectionRequestTimeout", Integer.valueOf(2000));
+        return Integer.valueOf(2000);
     }
 
     private HashMap<String, Integer> getHostMaxPerRoute() {
-        return ApolloConfigUtil.getMapConfig("hostMaxPerRoute");
+        return new HashMap<>();
     }
 
     private Integer getRetryRequestCount() {
-        return ApolloConfigUtil.getIntegerConfig("retryRequestCount", Integer.valueOf(3));
+        return Integer.valueOf(3);
     }
 
     private Boolean getEnableMonitor() {
-        return Boolean.valueOf(ApolloConfigUtil.getBooleanConfig("enableMonitor", true));
+        return Boolean.TRUE;
     }
 
     private Boolean getMonitorUseMetric() {
-        return Boolean.valueOf(ApolloConfigUtil.getBooleanConfig("monitorUseMetric", false));
+        return Boolean.FALSE;
     }
 }

@@ -7,9 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.client.methods.HttpUriRequest;
 
 import java.util.Map;
 

@@ -11,19 +11,13 @@ import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.omg.CORBA.portable.ResponseHandler;
-//import org.apache.http.HttpEntity;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.HttpPut;
-//import org.apache.http.client.methods.HttpUriRequest;
-//import org.apache.http.entity.StringEntity;
 
 public class PutClient<T> extends AbstractHttpClient<T> {
     private HttpPut httpPut;
 
     private HttpEntity httpEntity;
 
-    private boolean forJson = true;
+    private boolean forJson = Boolean.TRUE;
 
     public PutClient() {
         new PutClient((Class)String.class);

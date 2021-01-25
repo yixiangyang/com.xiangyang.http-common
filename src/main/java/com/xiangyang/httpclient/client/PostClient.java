@@ -11,11 +11,6 @@ import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-//import org.apache.http.HttpEntity;
-//import org.apache.http.client.ResponseHandler;
-//import org.apache.http.client.methods.HttpPost;
-//import org.apache.http.client.methods.HttpUriRequest;
-//import org.apache.http.entity.StringEntity;
 
 public class PostClient<T> extends AbstractHttpClient<T> {
     private HttpPost httpPost;

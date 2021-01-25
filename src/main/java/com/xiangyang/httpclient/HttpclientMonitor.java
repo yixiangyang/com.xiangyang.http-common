@@ -3,9 +3,6 @@ package com.xiangyang.httpclient;
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.pool.PoolStats;
-//import org.apache.http.conn.routing.HttpRoute;
-//import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-//import org.apache.http.pool.PoolStats;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

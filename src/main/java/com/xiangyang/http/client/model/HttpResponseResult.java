@@ -14,8 +14,6 @@ public class HttpResponseResult<T> implements Serializable {
 
     private T responseVo;
 
-    private String monitorTrackId;
-
     private Exception exception;
 
     public int getResultCode() {
@@ -42,14 +40,6 @@ public class HttpResponseResult<T> implements Serializable {
         this.responseVo = responseVo;
     }
 
-    public String getMonitorTrackId() {
-        return this.monitorTrackId;
-    }
-
-    public void setMonitorTrackId(String monitorTrackId) {
-        this.monitorTrackId = monitorTrackId;
-    }
-
     public Exception getException() {
         return this.exception;
     }
@@ -59,7 +49,7 @@ public class HttpResponseResult<T> implements Serializable {
     }
 
     public String toString() {
-        return "HttpResponseResult [responseVo=" + this.responseVo + ", monitorTrackId=" + this.monitorTrackId + "]";
+        return "HttpResponseResult [responseVo=" + this.responseVo + "]";
     }
 
     public static <T> HttpResponseResult<T> transform(com.xiangyang.httpclient.model.HttpResponseResult<T> result) {
@@ -67,7 +57,6 @@ public class HttpResponseResult<T> implements Serializable {
         httpResponseResult.setResultCode((result.getResultCode() == 200) ? 0 : result.getResultCode());
         httpResponseResult.setReturnMsg(result.getReturnMsg());
         httpResponseResult.setResponseVo(result.getResponseVo());
-//        httpResponseResult.setMonitorTrackId(ZipkinContext.getContext().getMonitorTrackId());
         httpResponseResult.setException(result.getException());
         return (HttpResponseResult)httpResponseResult;
     }

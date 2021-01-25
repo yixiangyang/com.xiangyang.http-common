@@ -9,7 +9,6 @@ import java.util.Map;
 import com.xiangyang.http.client.model.HttpResponseResult;
 import com.xiangyang.http.client.util.HttpToolsClient;
 import org.apache.hc.core5.http.ContentType;
-//import org.apache.http.entity.ContentType;
 
 public class AbstractHttpService {
     public HttpResponseResult<String> getStrByGetUrl(String requestUrl) {
