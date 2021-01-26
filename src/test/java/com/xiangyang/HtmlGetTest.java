@@ -17,8 +17,8 @@ import java.nio.charset.Charset;
 public class HtmlGetTest {
     public static void main(String[] args) throws IOException, ParseException {
         HttpResponseResult<String> str= HttpToolsClient.getStrByGetUrl("http://www.baidu.com", Charset.forName("utf-8"));
-//        Document document = Jsoup.parse(String.valueOf(str),"utf-8");
-        System.out.println(str);
+        Document document = Jsoup.parse(String.valueOf(str),"utf-8");
+        System.out.println(document);
 
     }
 }
