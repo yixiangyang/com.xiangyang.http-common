@@ -33,8 +33,8 @@ public class GetTest3 {
         CloseableHttpResponse response = null;
         try {
             // 创建 HttpGet 对象
-            URIBuilder uriBuilder=new URIBuilder("http://httpbin.org/get");
-            uriBuilder.setParameter("aa","中文");
+            URIBuilder uriBuilder=new URIBuilder("http://www.baidu.com");
+//            uriBuilder.setParameter("aa","中文");
 //            uriBuilder.setCharset(Charset.forName("utf-8"));
             HttpGet httpGet = new HttpGet(uriBuilder.build());
             // 执行 Http Get 请求
@@ -45,7 +45,7 @@ public class GetTest3 {
 //                String entity = EntityUtils.toString(response.getEntity(), "utf-8");
 //                JSONObject json = JSONObject.parseObject(entity);
 //                System.out.println(json);
-                System.out.println(EntityUtils.toString(response.getEntity(),"GBK"));
+                System.out.println(EntityUtils.toString(response.getEntity(),"utf-8"));
             }
             // 销毁流
             EntityUtils.consume(response.getEntity());

@@ -62,6 +62,7 @@ public class HttpToolsClient {
     public static HttpResponseResult<String> getStrByGetParameters(String requestUrl, Map<String, Object> paramMap, Charset charset, Integer connectTimeOut, Integer readTimeOut) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForGet()
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
+                .withResponseHandler(getStringResponseHandler())
                 .addUrlParameters(paramMap)
                 .withConfig(HttpClientFactory.Config.builder().connectTimeout(connectTimeOut).readTimeout(readTimeOut).build())
                 .executeForResult());
@@ -96,6 +97,21 @@ public class HttpToolsClient {
 
     public static <T> HttpResponseResult<T> getGenericObjectByGetParameters(String requestUrl, Map<String, Object> paramMap, Integer connectTimeOut, Integer readTimeOut, TypeReference<T> type, Feature... features) {
         return getGenericObjectByGetParameters(requestUrl, paramMap, null, connectTimeOut, readTimeOut, type, features);
+    }
+
+    /**
+     * 将返回对象根据对应编码格式做相应处理
+     * @param <String>
+     * @return
+     */
+    public static <String> HttpClientResponseHandler<String> getStringResponseHandler() {
+        return (HttpClientResponseHandler<String>)new AbstractHttpClientResponseHandler<String>() {
+            @SneakyThrows
+            @Override
+            public String handleEntity(HttpEntity httpEntity) throws IOException {
+                return (String) EntityUtils.toString(httpEntity, httpEntity.getContentEncoding() == null ? Charset.forName("utf-8") : Charset.forName(httpEntity.getContentEncoding()));
+            }
+        };
     }
 
     public static <T> HttpClientResponseHandler<T> getJsonResponseHandler(final Class<T> clz, Feature... features) {
