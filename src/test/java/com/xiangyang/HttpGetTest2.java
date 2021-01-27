@@ -3,6 +3,7 @@ package com.xiangyang;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -18,6 +19,7 @@ import sun.misc.IOUtils;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -29,9 +31,10 @@ public class HttpGetTest2 {
     public static void main(String[] args) {
 
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            URIBuilder uriBuilder=new URIBuilder("http://httpbin.org/get");
-            uriBuilder.setParameter("aa","中文");
-            uriBuilder.setCharset(Charset.forName("utf-8"));
+//            URIBuilder uriBuilder=new URIBuilder("http://httpbin.org/get");
+//            uriBuilder.setParameter("aa","中文");
+//            uriBuilder.setCharset(Charset.forName("utf-8"));
+            URIBuilder uriBuilder = new URIBuilder("https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimage.biaobaiju.com%2Fuploads%2F20180830%2F22%2F1535637647-sSIBadeLyg.jpeg&refer=http%3A%2F%2Fimage.biaobaiju.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1614327228&t=b201b1149139c1ce4ba491d9a8cd446a");
             HttpGet httpGet = new HttpGet(uriBuilder.build());
             Header header = new BasicHeader("Accept", "text/plain;charset=utf-8");
             httpGet.setHeader(new BasicHeader("Content-Type", "application/json;charset=utf-8"));
@@ -66,6 +69,12 @@ public class HttpGetTest2 {
                     String jsonString = objectMapper.readTree(responseEntity.getContent()).toString();
                     System.out.println(JSON.parse(jsonString));
                 }
+                if(responseEntity.getContentType().equals(ContentType.IMAGE_JPEG.getMimeType())){
+//                    InputStream inputStream=entity.getContent();
+                    FileUtils.copyToFile(responseEntity.getContent(), new File("D://logo.jpeg"));
+//                    FormatTools.getInstance().InputStream2Drawable(responseEntity.getContent());
+                }
+
 //                JsonFactory jsonFactory = new JsonFactory();
 //                ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
 //                try (InputStream inputStream = responseEntity.getContent()) {
