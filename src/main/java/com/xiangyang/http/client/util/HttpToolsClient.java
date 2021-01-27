@@ -3,6 +3,7 @@ package com.xiangyang.http.client.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiangyang.http.client.model.HttpResponseResult;
 import com.xiangyang.httpclient.XiangYangHttpClient;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.entity.mime.ContentBody;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
@@ -69,7 +71,7 @@ public class HttpToolsClient {
     }
 
     public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, Class<T> clazz) {
-        return getObjectByGetUrl(requestUrl, clazz);
+        return getObjectByGetUrl(requestUrl,  null, null, null, clazz);
     }
 
     public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, Charset charset, Class<T> clazz) {
@@ -83,6 +85,7 @@ public class HttpToolsClient {
     public static <T> HttpResponseResult<T> getObjectByGetUrl(String requestUrl, Charset charset, Integer connectTimeOut, Integer readTimeOut, Class<T> clazz) {
         return HttpResponseResult.transform(XiangYangHttpClient.restForGet(clazz)
                 .withUrl(URL.valueOf(requestUrl).setParamCharset(charset).toString())
+                .withResponseHandler(getInputStreamResponseHandler())
                 .withConfig(HttpClientFactory.Config.builder().connectTimeout(connectTimeOut).readTimeout(readTimeOut).build())
                 .executeForResult());
     }
@@ -115,6 +118,38 @@ public class HttpToolsClient {
         };
     }
 
+    /**
+     * 将返回对象根据对应编码格式做相应处理
+     * @param <String>
+     * @return
+     */
+    public static <T> HttpClientResponseHandler<T> getInputStreamResponseHandler() {
+        return (HttpClientResponseHandler<T>)new AbstractHttpClientResponseHandler<T>() {
+            @SneakyThrows
+            @Override
+            public T handleEntity(HttpEntity httpEntity) throws IOException {
+                if(httpEntity.getContentType().equals(ContentType.TEXT_HTML.getMimeType())){
+                    String html = EntityUtils.toString(httpEntity, "utf-8");
+                    System.out.println(html);
+                    return (T) html;
+                }
+                if(httpEntity.getContentType().equals(ContentType.APPLICATION_JSON.getMimeType())){
+                    ObjectMapper objectMapper = new ObjectMapper();
+//                    String html = EntityUtils.toString(responseEntity, "utf-8");
+                    String jsonString = objectMapper.readTree(httpEntity.getContent()).toString();
+                    System.out.println(JSON.parse(jsonString));
+                }
+                if(httpEntity.getContentType().equals(ContentType.IMAGE_JPEG.getMimeType())){
+//                    InputStream inputStream=entity.getContent();
+//                    FileUtils.copyToFile(httpEntity.getContent(), new File("D://logo.jpeg"));
+//                    FormatTools.getInstance().InputStream2Drawable(responseEntity.getContent());
+                    return (T)httpEntity.getContent();
+                }
+                System.out.println("处理的编码格式:"+httpEntity.getContentEncoding());
+                return (T) EntityUtils.toString(httpEntity, httpEntity.getContentEncoding() == null ? Charset.forName("utf-8") : Charset.forName(httpEntity.getContentEncoding()));
+            }
+        };
+    }
     public static <T> HttpClientResponseHandler<T> getJsonResponseHandler(final Class<T> clz, Feature... features) {
         return (HttpClientResponseHandler<T>)new AbstractHttpClientResponseHandler<T>() {
             @SneakyThrows
