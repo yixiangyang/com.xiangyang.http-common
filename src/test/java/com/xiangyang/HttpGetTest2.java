@@ -34,11 +34,13 @@ public class HttpGetTest2 {
 //            URIBuilder uriBuilder=new URIBuilder("http://httpbin.org/get");
 //            uriBuilder.setParameter("aa","中文");
 //            uriBuilder.setCharset(Charset.forName("utf-8"));
-            URIBuilder uriBuilder = new URIBuilder("https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimage.biaobaiju.com%2Fuploads%2F20180830%2F22%2F1535637647-sSIBadeLyg.jpeg&refer=http%3A%2F%2Fimage.biaobaiju.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1614327228&t=b201b1149139c1ce4ba491d9a8cd446a");
+//            URIBuilder uriBuilder = new URIBuilder("https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimage.biaobaiju.com%2Fuploads%2F20180830%2F22%2F1535637647-sSIBadeLyg.jpeg&refer=http%3A%2F%2Fimage.biaobaiju.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1614327228&t=b201b1149139c1ce4ba491d9a8cd446a");
+          URIBuilder uriBuilder = new URIBuilder("https://www.baidu.com/s");
             HttpGet httpGet = new HttpGet(uriBuilder.build());
-            Header header = new BasicHeader("Accept", "text/plain;charset=utf-8");
-            httpGet.setHeader(new BasicHeader("Content-Type", "application/json;charset=utf-8"));
-            httpGet.setHeader(header);
+//            Header header = new BasicHeader("Accept", "text/plain;charset=utf-8");
+//            httpGet.setHeader(new BasicHeader("Content-Type", "application/json;charset=utf-8"));
+//            httpGet.setHeader(header);
+            httpGet.setHeader(new BasicHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"));
             // The underlying HTTP connection is still held by the response object
             // to allow the response content to be streamed directly from the network socket.
             // In order to ensure correct deallocation of system resources
@@ -58,8 +60,18 @@ public class HttpGetTest2 {
 //                }
                 System.out.println( "hhhhhhhhhhhh"+responseEntity.getContentType());;
                 System.out.println(ContentType.TEXT_HTML.getMimeType());
-                System.out.println(responseEntity.getContentType().equals(ContentType.TEXT_HTML.getMimeType()));
+                System.out.println(responseEntity.getContentType().concat(ContentType.TEXT_HTML.getMimeType()).equals(ContentType.TEXT_HTML.getMimeType()));
                 if(responseEntity.getContentType().equals(ContentType.TEXT_HTML.getMimeType())){
+                    String html = EntityUtils.toString(responseEntity, "utf-8");
+                    System.out.println(html);
+                }
+                String aa= null;
+
+                if(responseEntity.getContentType().contains(ContentType.TEXT_HTML.getMimeType())){
+                    aa = ContentType.TEXT_HTML.getMimeType();
+                }
+                System.out.println(responseEntity.getContentType().substring(ContentType.TEXT_HTML.getMimeType().indexOf(ContentType.TEXT_HTML.getMimeType())));
+                if(aa.equals(ContentType.TEXT_HTML.getMimeType())){
                     String html = EntityUtils.toString(responseEntity, "utf-8");
                     System.out.println(html);
                 }
