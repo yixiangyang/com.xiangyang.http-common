@@ -7,6 +7,7 @@ import com.alibaba.fastjson.TypeReference;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 import com.xiangyang.httpclient.client.DeleteClient;
 import com.xiangyang.httpclient.client.GetClient;
@@ -16,6 +17,7 @@ import com.xiangyang.httpclient.model.HttpResponseResult;
 import com.xiangyang.httpclient.utils.HttpClientFactory;
 import lombok.SneakyThrows;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.entity.GzipDecompressingEntity;
 import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -129,8 +131,24 @@ public class XiangYangHttpClient {
 //            transaction.addData("rpcEntryUrl", zipkinContext.getRpcEntryUrl());
 //            logZipkinInHttpHeader(request, span);
             result = httpClient.execute(request);
+//            Header[] headers = result.getHeaders("Content-Encoding");
+//            boolean isGzip = false;
+//            for(Header h:headers){
+//                System.out.println(h.toString());
+//                if(h.getValue().equals("gzip")){
+//                    //返回头中含有gzip
+//                    isGzip = true;
+//                }
+//            }
+//            if(isGzip){
+//                //需要进行gzip解压处理
+//                System.out.println(EntityUtils.toString(new GzipDecompressingEntity(result.getEntity())));
+////                result = ;
+//            }
+//            String output = EntityUtils.toString(entity, Charset.forName("UTF-8").name());
 //            JSONObject json = JSONObject.parseObject( EntityUtils.toString(result.getEntity()));
-//                System.out.println(json);
+//                System.out.println(result.getEntity().getContent());
+//            System.out.println(EntityUtils.toString(request.getEntity(),utf-8));
 //            System.out.println("gggggggggggggggggg:"+httpEntity);
             T t = (T)responseHandler.handleResponse((ClassicHttpResponse) result);
             responseResult.resolve(result, t);

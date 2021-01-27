@@ -109,6 +109,7 @@ public class HttpToolsClient {
             @SneakyThrows
             @Override
             public String handleEntity(HttpEntity httpEntity) throws IOException {
+                System.out.println("处理的编码格式:"+httpEntity.getContentEncoding());
                 return (String) EntityUtils.toString(httpEntity, httpEntity.getContentEncoding() == null ? Charset.forName("utf-8") : Charset.forName(httpEntity.getContentEncoding()));
             }
         };

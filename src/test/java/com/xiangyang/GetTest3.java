@@ -33,10 +33,17 @@ public class GetTest3 {
         CloseableHttpResponse response = null;
         try {
             // 创建 HttpGet 对象
-            URIBuilder uriBuilder=new URIBuilder("http://www.baidu.com");
+            URIBuilder uriBuilder=new URIBuilder("https://a.jd.com//ajax/queryServerData.html");
 //            uriBuilder.setParameter("aa","中文");
 //            uriBuilder.setCharset(Charset.forName("utf-8"));
+
             HttpGet httpGet = new HttpGet(uriBuilder.build());
+//            {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36","Referer":"https://passport.jd.com/new/login.aspx"}
+//            httpGet.setHeader();
+            httpGet.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36");
+            httpGet.setHeader("Referer", "https://passport.jd.com/new/login.aspx");
+//            httpGet.addHeader("Accept-Encoding", "gzip, deflate");
+
             // 执行 Http Get 请求
             response = httpclient.execute(httpGet);
             // 输出响应内容
